@@ -8,18 +8,20 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Thread)
-@Warmup(time = 12, timeUnit = TimeUnit.SECONDS, iterations = 1)
+@Warmup(time = 8, timeUnit = TimeUnit.SECONDS, iterations = 1)
 @Measurement(time = 4, timeUnit = TimeUnit.SECONDS, iterations = 1)
 @Fork(value = 1)
 public class IntegerCacheBenchmark {
 
-    @Param({"10", "10000"}) // 10 = cached, 10000 = non-cached
+    @Param({"10", "10000"})
     int value;
 
-    // --------------------------------------------------------------------
-    // 1. Benchmark: Integer.valueOf(value)
-    // This hits the cache if "value" ∈ [-128..127], otherwise allocates.
-    // --------------------------------------------------------------------
+    @Setup(Level.Trial)
+    public void setup() {
+        System.out.println(">>>>>>>>>>>>>>>>>>> Benchmark: " + this.getClass().getSimpleName() + " PID= " + ProcessHandle.current().pid() + " >>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+    }
+
+    // This hits the cache  [ -128 up to 127]
     @Benchmark
     public Integer cached_valueOf(Blackhole blackhole) {
         Integer x = Integer.valueOf(value);
@@ -27,10 +29,7 @@ public class IntegerCacheBenchmark {
         return x;
     }
 
-    // --------------------------------------------------------------------
-    // 2. Benchmark: new Integer(value)
-    // This always allocates a new Integer (no cache).
-    // --------------------------------------------------------------------
+    //(no cache).
     @Benchmark
     public Integer new_integer(Blackhole blackhole) {
         Integer x = new Integer(value);
